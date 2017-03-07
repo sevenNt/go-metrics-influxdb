@@ -18,8 +18,8 @@ import "github.com/vrischmann/go-metrics-influxdb"
 go influxdb.InfluxDB(
     metrics.DefaultRegistry, // metrics registry
     time.Second * 10,        // interval
-    "http://localhost:8086", // the InfluxDB url
-    "mydb",                  // your InfluxDB database
+    "http://localhost:8086", // the InfluxDB address
+    "mydb",                  // your InfluxDB database
     "myuser",                // your InfluxDB user
     "mypassword",            // your InfluxDB password
 )
@@ -28,7 +28,7 @@ go influxdb.InfluxDB(
 go influxdb.InfluxDB(
     metrics.DefaultRegistry, // metrics registry
     time.Second * 10,        // interval
-    "udp://localhost:8125",  // the InfluxDB url
+    "udp://localhost:8125",  // the InfluxDB address
     "mydb",                  // your InfluxDB database
     "",                      // your InfluxDB user
     "",                      // your InfluxDB password
