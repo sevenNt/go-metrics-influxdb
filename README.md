@@ -14,6 +14,7 @@ Usage
 ```go
 import "github.com/vrischmann/go-metrics-influxdb"
 
+// use http protocol
 go influxdb.InfluxDB(
     metrics.DefaultRegistry, // metrics registry
     time.Second * 10,        // interval
@@ -21,6 +22,16 @@ go influxdb.InfluxDB(
     "mydb",                  // your InfluxDB database
     "myuser",                // your InfluxDB user
     "mypassword",            // your InfluxDB password
+)
+
+// use udp protocol
+go influxdb.InfluxDB(
+    metrics.DefaultRegistry, // metrics registry
+    time.Second * 10,        // interval
+    "udp://localhost:8125",  // the InfluxDB url
+    "mydb",                  // your InfluxDB database
+    "",                      // your InfluxDB user
+    "",                      // your InfluxDB password
 )
 ```
 
