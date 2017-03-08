@@ -1,7 +1,7 @@
 go-metrics-influxdb
 ===================
 
-This is a reporter for the [go-metrics](https://github.com/rcrowley/go-metrics) library which will post the metrics to [InfluxDB](https://influxdb.com/).
+This is a reporter for the [go-metrics](https://github.com/rcrowley/go-metrics) library which will post the metrics to [InfluxDB](https://influxdb.com/). go-metrics-influxdb uses latest influxDB client via HTTP/UDP protocol.
 
 Note
 ----
@@ -14,7 +14,7 @@ Usage
 ```go
 import "github.com/vrischmann/go-metrics-influxdb"
 
-// use http protocol
+// send metrics via HTTP protocol
 go influxdb.InfluxDB(
     metrics.DefaultRegistry, // metrics registry
     time.Second * 10,        // interval
@@ -24,7 +24,7 @@ go influxdb.InfluxDB(
     "mypassword",            // your InfluxDB password
 )
 
-// use udp protocol
+// send metrics via UDP protocol
 go influxdb.InfluxDB(
     metrics.DefaultRegistry, // metrics registry
     time.Second * 10,        // interval
