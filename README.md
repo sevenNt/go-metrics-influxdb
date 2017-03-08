@@ -28,8 +28,8 @@ go influxdb.InfluxDB(
 go influxdb.InfluxDB(
     metrics.DefaultRegistry, // metrics registry
     time.Second * 10,        // interval
-    "udp://localhost:8125",  // the InfluxDB address
-    "mydb",                  // your InfluxDB database
+    "udp://localhost:8089",  // the InfluxDB address
+    "",                      // UDP database setted by your configuration file
     "",                      // your InfluxDB user
     "",                      // your InfluxDB password
 )
