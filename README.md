@@ -12,7 +12,7 @@ Usage
 -----
 
 ```go
-import "github.com/vrischmann/go-metrics-influxdb"
+import "github.com/sevenNt/go-metrics-influxdb"
 
 // send metrics via HTTP protocol
 go influxdb.InfluxDB(
@@ -33,7 +33,17 @@ go influxdb.InfluxDB(
     "",                      // your InfluxDB user
     "",                      // your InfluxDB password
 )
-```
+
+//send guage metries(field) in registry only one time not by time interval
+go influxdb.InfluxDBWithTagsV2(
+    metrics.DefaultRegistry, // metrics registry
+    "http://localhost:8086", // the InfluxDB address
+    "mydb",                  // your InfluxDB database
+    "myuser",                // your InfluxDB user
+    "mypassword",            // your InfluxDB password
+    "tableName",// your new table name
+    "tags", // tags info,  not field
+)
 
 License
 -------
