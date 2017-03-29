@@ -26,11 +26,11 @@ type reporter struct {
 
 // InfluxDB starts a InfluxDB reporter which will post the metrics from the given registry at each d interval.
 func InfluxDB(r metrics.Registry, d time.Duration, addr, database, username, password string) {
-	InfluxDBWithTags(r, d, addr, database, username, password, nil)
+	WithTags(r, d, addr, database, username, password, nil)
 }
 
-// InfluxDBWithTags starts a InfluxDB reporter which will post the metrics from the given registry at each d interval with the specified tags
-func InfluxDBWithTags(r metrics.Registry, d time.Duration, addr, database, username, password string, tags map[string]string) {
+// WithTags starts a InfluxDB reporter which will post the metrics from the given registry at each d interval with the specified tags
+func WithTags(r metrics.Registry, d time.Duration, addr, database, username, password string, tags map[string]string) {
 	rep := &reporter{
 		reg:      r,
 		interval: d,
@@ -221,6 +221,7 @@ func NewReporter(address, database, username, password string) *Reporter {
 	return rep
 }
 
+// Send 发送一条logItem类型的数据(一个registry, 多个tag)
 func (r *Reporter) Send(item *ReporterItem) error {
 	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
 		Database: r.database,
