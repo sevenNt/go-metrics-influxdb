@@ -48,29 +48,11 @@ func InfluxDBWithTags(r metrics.Registry, d time.Duration, addr, database, usern
 	rep.run()
 }
 
-//发送批量的metrics数据(当前为gauge)到influxDB, 非定时发送
-func InfluxDBWithTagsV2(r metrics.Registry, addr, database, username, password, tableName string, tags map[string]string) {
-	rep := &reporter{
-		reg:      r,
-		addr:     addr,
-		database: database,
-		username: username,
-		password: password,
-		tags:     tags,
-	}
-
-	if err := rep.makeClient(); err != nil {
-		log.Printf("unable to make InfluxDB client. err=%v", err)
-		return
-	}
-	rep.runV2(tableName)
-}
-
 func (r *reporter) makeClient() (err error) {
 	url, err := url.Parse(r.addr)
 	if err != nil {
 		log.Printf("unable to parse InfluxDB address %s. err=%v", r.addr, err)
-		return
+		return err
 	}
 
 	switch url.Scheme {
@@ -89,43 +71,6 @@ func (r *reporter) makeClient() (err error) {
 		err = errors.New("invalid scheme")
 	}
 
-	return
-}
-
-func (r *reporter) runV2(tableName string) error {
-	_, _, err := r.client.Ping(1 * time.Second)
-	if err != nil {
-		log.Printf("got error while sending a ping to InfluxDB, err=%v", err)
-		return err
-	}
-
-	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
-		Database: r.database,
-	})
-
-	if err != nil {
-		return err
-	}
-
-	r.reg.Each(func(name string, i interface{}) {
-		now := time.Now()
-
-		switch metric := i.(type) {
-		case metrics.GaugeFloat64:
-			ms := metric.Snapshot()
-			fields := map[string]interface{}{
-				"value": ms.Value(),
-			}
-			pt, _ := client.NewPoint(fmt.Sprintf("%s.gauge", tableName), r.tags, fields, now)
-			bp.AddPoint(pt)
-		}
-	})
-
-	if len(bp.Points()) > 0 {
-		err = r.client.Write(bp)
-	} else {
-		err = errors.New("no point in client")
-	}
 	return err
 }
 
@@ -242,4 +187,68 @@ func (r *reporter) send() error {
 	})
 
 	return r.client.Write(bp)
+}
+
+//ReporterItem 发送一条数据的内容
+type ReporterItem struct {
+	Reg  metrics.Registry
+	Tags map[string]string
+}
+
+//Reporter 发送给数据库的client对象
+type Reporter struct {
+	database string
+	client   client.Client
+}
+
+//NewReporter 发送批量的metrics数据(当前为gauge)到influxDB, 非定时发送
+func NewReporter(address, database, username, password string) *Reporter {
+	//client 只创建一次
+	c, err := client.NewHTTPClient(client.HTTPConfig{
+		Addr:     address,
+		Username: username,
+		Password: password,
+	})
+	if err != nil {
+		log.Printf("fail to create NewHTTPClient, err=%v", err)
+		return nil
+	}
+
+	rep := &Reporter{
+		database: database,
+		client:   c,
+	}
+	return rep
+}
+
+func (r *Reporter) Send(item *ReporterItem) error {
+	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
+		Database: r.database,
+	})
+
+	if err != nil {
+		log.Printf("fail to create batch points, err=%v", err)
+		return err
+	}
+
+	item.Reg.Each(func(name string, i interface{}) {
+		now := time.Now()
+
+		switch metric := i.(type) {
+		case metrics.GaugeFloat64:
+			ms := metric.Snapshot()
+			fields := map[string]interface{}{
+				"value": ms.Value(),
+			}
+			pt, _ := client.NewPoint(fmt.Sprintf("%s.gauge", "metrics"), item.Tags, fields, now)
+			bp.AddPoint(pt)
+		}
+	})
+
+	if len(bp.Points()) > 0 {
+		err = r.client.Write(bp)
+	} else {
+		err = errors.New("no point to send")
+	}
+	return err
 }
