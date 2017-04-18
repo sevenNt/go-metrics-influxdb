@@ -222,7 +222,7 @@ func NewReporter(address, database, username, password string) *Reporter {
 }
 
 // Send 发送一条logItem类型的数据(一个registry, 多个tag)
-func (r *Reporter) Send(item *ReporterItem) error {
+func (r *Reporter) Send(item *ReporterItem, measureName string) error {
 	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
 		Database: r.database,
 	})
@@ -241,7 +241,7 @@ func (r *Reporter) Send(item *ReporterItem) error {
 			fields := map[string]interface{}{
 				"value": ms.Value(),
 			}
-			pt, _ := client.NewPoint(fmt.Sprintf("%s.gauge", "metrics"), item.Tags, fields, now)
+			pt, _ := client.NewPoint(fmt.Sprintf("%s.gauge", measureName), item.Tags, fields, now)
 			bp.AddPoint(pt)
 		}
 	})
