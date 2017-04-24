@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/influxdata/influxdb/client/v2"
@@ -232,6 +233,13 @@ func (r *Reporter) Send(item *ReporterItem, measureName string) error {
 		return err
 	}
 
+	st, err := strconv.Atoi(item.Tags["start_time"])
+	if err != nil {
+		log.Printf("fail to convert start time, err=%v", err)
+		return err
+	}
+	delete(item.Tags, "start_time")
+
 	item.Reg.Each(func(name string, i interface{}) {
 		now := time.Now()
 
@@ -239,7 +247,8 @@ func (r *Reporter) Send(item *ReporterItem, measureName string) error {
 		case metrics.GaugeFloat64:
 			ms := metric.Snapshot()
 			fields := map[string]interface{}{
-				"value": ms.Value(),
+				"value":      ms.Value(),
+				"start_time": st,
 			}
 			pt, _ := client.NewPoint(fmt.Sprintf("%s.gauge", measureName), item.Tags, fields, now)
 			bp.AddPoint(pt)
